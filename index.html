@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>荒岛生存 FPS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="game-shell">
+    <div id="game"></div>
+
+    <section id="hud" aria-label="游戏状态">
+      <div class="hud-row top">
+        <div class="stat"><span>生命</span><strong id="health">100</strong></div>
+        <div class="stat"><span>护甲</span><strong id="armor">0</strong></div>
+        <div class="stat"><span>弹匣</span><strong id="mag">30</strong></div>
+        <div class="stat"><span>备用</span><strong id="reserve">90</strong></div>
+        <div class="stat"><span>剩余</span><strong id="remaining">201</strong></div>
+      </div>
+
+      <div id="center-hint">点击开始行动</div>
+      <div id="crosshair" aria-hidden="true"></div>
+      <div id="scope-overlay" aria-hidden="true">
+        <div class="scope-ring"></div>
+        <div class="scope-cross-h"></div>
+        <div class="scope-cross-v"></div>
+        <div class="scope-dot"></div>
+      </div>
+      <div id="hit-indicator" aria-hidden="true"></div>
+      <div id="damage-vignette" aria-hidden="true"></div>
+      <div id="zone-warning" aria-hidden="true">
+        <div class="zone-warning-text">⚠️ 安全区外！快进去！</div>
+      </div>
+
+      <div id="center-status">
+        <div class="bar-row">
+          <span>生命</span>
+          <div class="bar"><i id="health-fill"></i></div>
+          <strong id="health-value">100</strong>
+        </div>
+        <div class="bar-row armor-row">
+          <span>护甲</span>
+          <div class="bar"><i id="armor-fill"></i></div>
+          <strong id="armor-value">0</strong>
+        </div>
+      </div>
+
+      <div class="hud-row bottom">
+        <div class="stat"><span>击杀</span><strong id="kills">0 / 8</strong></div>
+        <div class="stat"><span>安全区</span><strong id="zone">--</strong></div>
+        <div class="stat"><span>补给</span><strong id="pickup">无</strong></div>
+        <div class="stat"><span>高度</span><strong id="altitude">--</strong></div>
+      </div>
+
+      <div id="weapon-card">
+        <div class="weapon-icon"></div>
+        <div>
+          <span id="weapon-name">BR-17</span>
+          <strong id="weapon-mode">自动步枪</strong>
+          <div class="ammo-counter">
+            <span id="ammo-mag">30</span>
+            <span class="ammo-slash">/</span>
+            <span id="ammo-reserve">90</span>
+          </div>
+        </div>
+      </div>
+
+      <section id="map-panel" aria-label="地图">
+        <div class="map-title">
+          <span>战术地图</span>
+          <strong>M</strong>
+        </div>
+        <canvas id="map-canvas" width="260" height="260"></canvas>
+      </section>
+    </section>
+
+    <section id="overlay" class="panel active">
+      <div class="panel-inner">
+        <p class="eyebrow">原创荒岛 · 第一人称生存</p>
+        <h1>最后的安全区</h1>
+        <p class="lede">从空中选择落点，搜索补给，清掉岛上的敌人。安全区会持续缩小，圈外会持续掉血。</p>
+        <button id="start-button" type="button">开始跳伞</button>
+        <div class="keys">
+          <span>WASD 移动/控伞</span>
+          <span>鼠标瞄准</span>
+          <span>左键射击</span>
+          <span>右键瞄准镜</span>
+          <span>F 拾取</span>
+          <span>R 换弹</span>
+          <span>M 地图</span>
+          <span>滚轮切枪</span>
+          <span>空格跳跃/开伞</span>
+          <span>Ctrl 下蹲</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/vendor/three.min.js"></script>
+  <script src="src/game.js"></script>
+</body>
+</html>

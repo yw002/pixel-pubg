@@ -1,0 +1,545 @@
+:root {
+  color-scheme: dark;
+  --ink: #f4f7ee;
+  --muted: #b9c3b4;
+  --amber: #ffcf6e;
+  --danger: #ff5a4f;
+  --glass: rgba(10, 15, 18, 0.66);
+  --line: rgba(244, 247, 238, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #10151a;
+  color: var(--ink);
+  font-family: "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+#game-shell,
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hud-row {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.hud-row.top {
+  top: 16px;
+}
+
+.hud-row.bottom {
+  bottom: 16px;
+}
+
+.stat {
+  min-width: 96px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--glass);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.stat.warning strong {
+  color: var(--amber);
+}
+
+.stat.danger strong {
+  color: var(--danger);
+}
+
+.stat span,
+#weapon-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.stat strong,
+#weapon-card strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+#center-hint {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 34px);
+  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  color: #f8f1dc;
+  text-align: center;
+  transform: translateX(-50%);
+  background: rgba(8, 12, 15, 0.45);
+  text-shadow: 0 1px 2px #000;
+}
+
+#crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(18px + var(--spread, 0px));
+  height: calc(18px + var(--spread, 0px));
+  transform: translate(-50%, -50%);
+  transition: width 80ms ease, height 80ms ease;
+}
+
+#crosshair::before,
+#crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+#crosshair::before {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+#crosshair::after {
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+#hit-indicator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 122px;
+  height: 122px;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(var(--hit-angle, 0deg));
+  transition: opacity 160ms ease;
+}
+
+#hit-indicator::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  border-right: 12px solid transparent;
+  border-left: 12px solid transparent;
+  border-bottom: 24px solid rgba(255, 80, 68, 0.9);
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.8));
+  transform: translateX(-50%);
+}
+
+#hit-indicator.active {
+  opacity: 1;
+}
+
+#damage-vignette {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  background: radial-gradient(circle, transparent 46%, rgba(196, 21, 25, 0.36) 100%);
+}
+
+#damage-vignette.hit {
+  opacity: 1;
+}
+
+#zone-warning {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, transparent 40%, rgba(255, 0, 0, 0.55) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#zone-warning.active {
+  opacity: 1;
+  animation: zone-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes zone-pulse {
+  from { background: radial-gradient(circle, transparent 40%, rgba(255, 0, 0, 0.45) 100%); }
+  to { background: radial-gradient(circle, transparent 40%, rgba(255, 0, 0, 0.7) 100%); }
+}
+
+.zone-warning-text {
+  position: absolute;
+  left: 50%;
+  top: 100px;
+  transform: translateX(-50%);
+  color: #ff3333;
+  font-size: 32px;
+  font-weight: 900;
+  text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 2px 3px #000;
+  animation: text-pulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes text-pulse {
+  from { transform: translateX(-50%) scale(1); }
+  to { transform: translateX(-50%) scale(1.1); }
+}
+
+#scope-overlay {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, width 0.25s ease, height 0.25s ease;
+}
+
+#scope-overlay.active {
+  width: min(70vh, 70vw);
+  height: min(70vh, 70vw);
+  opacity: 1;
+}
+
+.scope-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(255,255,255,0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.72), inset 0 0 40px rgba(0,0,0,0.3);
+}
+
+.scope-cross-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255,255,255,0.5);
+  transform: translateY(-50%);
+}
+
+.scope-cross-v {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(255,255,255,0.5);
+  transform: translateX(-50%);
+}
+
+.scope-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: #ff4422;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px rgba(255,68,34,0.8);
+}
+
+.damage-number {
+  position: fixed;
+  pointer-events: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  text-shadow: 0 0 6px rgba(0,0,0,0.9), 0 1px 3px #000;
+  transform: translate(-50%, -50%);
+  animation: dmg-float 0.8s ease-out forwards;
+  z-index: 100;
+}
+
+.damage-number.headshot {
+  color: #ff4422;
+  font-size: 24px;
+  text-shadow: 0 0 10px rgba(255,60,30,0.8), 0 0 6px rgba(0,0,0,0.9);
+}
+
+@keyframes dmg-float {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 48px)) scale(0.8); }
+}
+
+#weapon-card {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 180px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+}
+
+.ammo-counter {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.ammo-slash {
+  margin: 0 2px;
+  opacity: 0.6;
+}
+
+#center-status {
+  position: absolute;
+  left: 50%;
+  bottom: 78px;
+  width: min(360px, calc(100vw - 40px));
+  transform: translateX(-50%);
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 42px 1fr 38px;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(7, 12, 15, 0.58);
+  backdrop-filter: blur(6px);
+}
+
+.bar-row span,
+.bar-row strong {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.bar {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f74d43, #ffcf6e);
+  transform-origin: left center;
+}
+
+.armor-row .bar i {
+  background: linear-gradient(90deg, #5ab8ff, #d8f3ff);
+}
+
+.reload-anim .weapon-icon {
+  animation: reload-tilt 0.9s ease both;
+}
+
+@keyframes reload-tilt {
+  0% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(8px) rotate(-18deg); }
+  70% { transform: translateY(4px) rotate(12deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+.weapon-icon {
+  width: 46px;
+  height: 26px;
+  image-rendering: pixelated;
+  background:
+    linear-gradient(90deg, transparent 0 8px, #222 8px 35px, transparent 35px),
+    linear-gradient(90deg, #d6b26a 0 26px, #222 26px 46px);
+  clip-path: polygon(0 42%, 54% 42%, 62% 18%, 100% 18%, 100% 52%, 68% 52%, 58% 82%, 38% 82%, 38% 58%, 0 58%);
+}
+
+#map-panel {
+  position: absolute;
+  right: 18px;
+  top: 16px;
+  display: none;
+  width: 292px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(5, 10, 12, 0.76);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+}
+
+#map-panel.active {
+  display: block;
+}
+
+.map-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.map-title strong {
+  color: var(--amber);
+}
+
+#map-canvas {
+  width: 260px;
+  height: 260px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #173545;
+}
+
+.panel {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(rgba(6, 11, 14, 0.38), rgba(6, 11, 14, 0.72)),
+    url("assets/images/pixel-island-atlas.png") center / cover,
+    #10151a;
+}
+
+.panel.active {
+  display: grid;
+}
+
+.panel-inner {
+  width: min(640px, 100%);
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(7, 12, 15, 0.74);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--amber);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(36px, 7vw, 72px);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.lede {
+  max-width: 540px;
+  margin: 16px 0 22px;
+  color: #d7dece;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+#start-button {
+  min-width: 156px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 6px;
+  color: #1d180d;
+  background: var(--amber);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.keys span {
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  color: #d8dfd2;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+@media (max-width: 780px) {
+  .hud-row {
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .stat {
+    min-width: 0;
+    flex: 1;
+    padding: 7px;
+  }
+
+  .stat strong {
+    font-size: 15px;
+  }
+
+  #weapon-card {
+    display: none;
+  }
+
+  #map-panel {
+    left: 10px;
+    right: 10px;
+    top: 76px;
+    width: auto;
+  }
+
+  #map-canvas {
+    width: 100%;
+    height: auto;
+  }
+}
